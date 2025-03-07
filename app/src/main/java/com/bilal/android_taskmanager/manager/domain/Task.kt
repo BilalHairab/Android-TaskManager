@@ -9,9 +9,9 @@ import java.util.Date
  */
 @Entity(tableName = "tasks")
 data class Task(
-    @PrimaryKey val id: String,
+    @PrimaryKey val id: Int,
     val title: String,
-    val desc: String?,
+    val desc: String? = null,
     val priority: TaskPriority,
     val dueDate: Date,
     val completed: Boolean
