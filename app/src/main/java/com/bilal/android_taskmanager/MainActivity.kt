@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.bilal.android_taskmanager.manager.presentation.MainScreen
 import com.bilal.android_taskmanager.manager.presentation.list.TasksListScreen
 import com.bilal.android_taskmanager.ui.theme.AndroidTaskManagerTheme
 
@@ -20,11 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AndroidTaskManagerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    TasksListScreen(
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                MainScreen()
             }
         }
     }
@@ -34,6 +31,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     AndroidTaskManagerTheme {
-        TasksListScreen()
+        MainScreen()
     }
 }

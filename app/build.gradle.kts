@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.room.ktx)
     kapt(libs.room.compiler)
     implementation(libs.bundles.koin)
+    implementation(libs.navigation.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
