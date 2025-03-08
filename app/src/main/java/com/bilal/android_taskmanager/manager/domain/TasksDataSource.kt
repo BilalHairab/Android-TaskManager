@@ -1,16 +1,18 @@
 package com.bilal.android_taskmanager.manager.domain
 
+import com.bilal.android_taskmanager.manager.domain.Result
+
 /**
  * Created by Bilal Hairab on 08/03/2025.
  */
 interface TasksDataSource {
-    suspend fun insertTask(task: Task)
+    suspend fun insertTask(task: Task): Result<Unit, DBError>
 
-    suspend fun updateTask(task: Task)
+    suspend fun updateTask(task: Task): Result<Unit, DBError>
 
-    suspend fun deleteTask(task: Task)
+    suspend fun deleteTask(task: Task): Result<Unit, DBError>
 
-    fun getAllTasks(): List<Task>
+    fun getAllTasks(): Result<List<Task>, DBError>
 
-    suspend fun getTaskById(taskId: String): Task?
+    suspend fun getTaskById(taskId: String): Result<Task?, DBError>
 }

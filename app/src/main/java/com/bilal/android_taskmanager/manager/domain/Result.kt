@@ -4,6 +4,7 @@ package com.bilal.android_taskmanager.manager.domain
  * Created by Bilal Hairab on 08/03/2025.
  */
 typealias DomainError = Error
+class DBError(val message: String): Error
 
 sealed interface Result<out D, out E: Error> {
     data class Success<out D>(val data: D): Result<D, Nothing>
