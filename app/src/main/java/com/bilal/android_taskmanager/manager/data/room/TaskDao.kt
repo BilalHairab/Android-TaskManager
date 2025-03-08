@@ -7,24 +7,25 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.bilal.android_taskmanager.manager.domain.Task
+import com.bilal.android_taskmanager.manager.domain.TasksDataSource
 
 /**
  * Created by Bilal Hairab on 07/03/2025.
  */
 @Dao
-interface TaskDao {
+interface TaskDao: TasksDataSource {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: Task)
+    override suspend fun insertTask(task: Task)
 
     @Update
-    suspend fun updateTask(task: Task)
+    override suspend fun updateTask(task: Task)
 
     @Delete
-    suspend fun deleteTask(task: Task)
+    override suspend fun deleteTask(task: Task)
 
     @Query("SELECT * FROM tasks ORDER BY dueDate ASC")
-    fun getAllTasks(): List<Task>
+    override fun getAllTasks(): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
-    suspend fun getTaskById(taskId: String): Task?
+    override suspend fun getTaskById(taskId: String): Task?
 }

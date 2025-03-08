@@ -1,5 +1,7 @@
 package com.bilal.android_taskmanager.di
 
+import androidx.room.Room
+import com.bilal.android_taskmanager.manager.data.room.AppDatabase
 import org.koin.dsl.module
 
 /**
@@ -7,5 +9,10 @@ import org.koin.dsl.module
  */
 
 val appModule = module {
+    single {
+        Room.databaseBuilder(get(), AppDatabase::class.java, "task_database")
+            .build()
+    }
 
+    single { get<AppDatabase>().taskDao() }
 }

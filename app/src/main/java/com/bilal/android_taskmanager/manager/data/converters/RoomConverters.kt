@@ -7,7 +7,7 @@ import java.util.Date
 /**
  * Created by Bilal Hairab on 07/03/2025.
  */
-class Converters {
+class RoomConverters {
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? {
         return value?.let { Date(it) }
