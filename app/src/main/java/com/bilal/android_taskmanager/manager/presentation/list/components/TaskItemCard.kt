@@ -10,10 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -58,9 +55,7 @@ fun TaskItemCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp)
             .height(height = 80.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
             .shadow(
                 elevation = 15.dp,
                 shape = RectangleShape,
@@ -68,18 +63,13 @@ fun TaskItemCard(
                 spotColor = MaterialTheme.colorScheme.primary
             ),
         shape = RectangleShape,
-        border = BorderStroke(
-            width = 1.dp,
-            color = MaterialTheme.colorScheme.primary
-        ),
-        colors = CardDefaults.cardColors(
-            containerColor = if(task.completed) MaterialTheme.colorScheme.surfaceContainer else task.priority.getSurfaceColor(),
-            contentColor = contentColor
-        )
     ) {
         Row(modifier = modifier
             .fillMaxHeight()
-            .padding(vertical = 8.dp)) {
+            .background(if(task.completed) MaterialTheme.colorScheme.surfaceContainer else task.priority.getSurfaceColor())
+            .fillMaxWidth()
+            .padding(8.dp)
+        ) {
             Icon(
                 imageVector = ImageVector.vectorResource(id = if (task.completed) R.drawable.ic_completed else R.drawable.ic_pending),
                 contentDescription = if (task.completed) "Completed" else "Incomplete",
@@ -111,7 +101,7 @@ fun TaskItemCard(
 private fun TaskCardPreview() {
     AndroidTaskManagerTheme {
         TaskItemCard(
-            task = Task(id = 1, title = "Review", dueDate = Date(), priority = TaskPriority.HIGH, completed = false),
+            task = Task(id = 1, title = "Review", dueDate = Date(), priority = TaskPriority.High, completed = false),
         )
     }
 }

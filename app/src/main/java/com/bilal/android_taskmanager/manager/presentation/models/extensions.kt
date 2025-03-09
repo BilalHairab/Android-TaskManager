@@ -12,9 +12,9 @@ import java.util.Locale
  */
 
 fun TaskPriority.getSurfaceColor(): Color {
-    return if (this == TaskPriority.LOW) {
+    return if (this == TaskPriority.Low) {
         Color.Blue
-    } else if (this == TaskPriority.MEDIUM) {
+    } else if (this == TaskPriority.Medium) {
         Color.Yellow
     } else {
         Color.Red

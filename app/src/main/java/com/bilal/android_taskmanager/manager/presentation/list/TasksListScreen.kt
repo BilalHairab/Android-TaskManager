@@ -9,10 +9,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,19 +33,36 @@ import org.koin.androidx.compose.koinViewModel
  * Created by Bilal Hairab on 08/03/2025.
  */
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksListScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: TasksListViewModel = koinViewModel()
 ) {
-    Scaffold(floatingActionButton = {
-        FloatingActionButton(onClick = {
-            navController.navigate("add_task")
-        }) {
-            Icon(Icons.Filled.Add, contentDescription = "Add Task")
-        }
-    }) { paddingValues ->
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Task Manager") },
+                navigationIcon = {
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { navController.navigate("add_task") }) {
+                        Icon(Icons.Filled.Add, contentDescription = "Add Task")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                navController.navigate("add_task")
+            }) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Task")
+            }
+        }) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             val state by viewModel.state.collectAsStateWithLifecycle()
             if (state.isLoading) {
@@ -49,7 +70,12 @@ fun TasksListScreen(
                     CircularProgressIndicator()
                 }
             } else if (state.tasks.isNotEmpty()) {
-                LazyColumn(modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp))
+                LazyColumn(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                )
                 {
                     items(state.tasks) { task ->
                         TaskItemCard(

@@ -48,6 +48,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
+    implementation(libs.material.icons.extended)
     kapt(libs.room.compiler)
     implementation(libs.bundles.koin)
     implementation(libs.navigation.compose)

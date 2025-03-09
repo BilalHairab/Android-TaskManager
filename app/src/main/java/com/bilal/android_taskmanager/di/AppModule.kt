@@ -4,6 +4,7 @@ import androidx.room.Room
 import com.bilal.android_taskmanager.manager.data.repos.TaskRepository
 import com.bilal.android_taskmanager.manager.data.room.AppDatabase
 import com.bilal.android_taskmanager.manager.domain.TasksDataSource
+import com.bilal.android_taskmanager.manager.presentation.add_task.AddTaskViewModel
 import com.bilal.android_taskmanager.manager.presentation.list.TasksListViewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
@@ -21,4 +22,5 @@ val appModule = module {
     single { get<AppDatabase>().taskDao() }
     single<TasksDataSource> { TaskRepository(get()) }
     viewModelOf(::TasksListViewModel)
+    viewModelOf(::AddTaskViewModel)
 }
