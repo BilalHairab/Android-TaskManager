@@ -12,7 +12,7 @@ interface TasksDataSource {
 
     suspend fun deleteTask(task: Task): Result<Unit, DBError>
 
-    fun getAllTasks(): Result<List<Task>, DBError>
+    suspend fun getNewTasks(taskID: Int): Result<List<Task>, DBError>
 
     suspend fun getTaskById(taskId: String): Result<Task?, DBError>
 }

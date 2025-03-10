@@ -22,8 +22,8 @@ interface TaskDao {
     @Delete
     suspend fun deleteTask(task: Task)
 
-    @Query("SELECT * FROM tasks ORDER BY dueDate ASC")
-    fun getAllTasks(): List<Task>
+    @Query("SELECT * FROM tasks WHERE id > :taskId ORDER BY dueDate ASC")
+    fun getNewTasks(taskId: Int): List<Task>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     suspend fun getTaskById(taskId: String): Task?

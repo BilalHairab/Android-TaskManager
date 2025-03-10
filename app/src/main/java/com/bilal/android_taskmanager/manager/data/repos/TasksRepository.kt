@@ -27,9 +27,9 @@ class TaskRepository(private val taskDao: TaskDao) : TasksDataSource {
         }
     }
 
-    override fun getAllTasks(): Result<List<Task>, DBError> {
+    override suspend fun getNewTasks(taskID: Int): Result<List<Task>, DBError> {
         return try {
-            Result.Success(taskDao.getAllTasks())
+            Result.Success(taskDao.getNewTasks(taskID))
         } catch (e: Exception) {
             Result.Error(DBError(e.message ?: "Unknown Error"))
         }
