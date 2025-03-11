@@ -19,13 +19,19 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -33,6 +39,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.bilal.android_taskmanager.manager.presentation.list.components.TaskItemCard
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -46,7 +53,10 @@ fun TasksListScreen(
     modifier: Modifier = Modifier,
     viewModel: TasksListViewModel = koinViewModel()
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Task Manager") },
@@ -76,7 +86,7 @@ fun TasksListScreen(
                 Log.d("TasksListViewModel", "DisposableEffect")
                 val observer = LifecycleEventObserver { _, event ->
                     if (event == Lifecycle.Event.ON_RESUME) {
-                        viewModel.onAction(TasksListScreenActions.LoadTasksAction(state.tasks.maxOfOrNull { it.id } ?: -1))
+                        viewModel.onAction(TasksListScreenActions.LoadTasksAction(state.tasks.maxOfOrNull { it.task.id } ?: -1))
                     }
                 }
                 lifecycleOwner.lifecycle.addObserver(observer)
@@ -99,15 +109,33 @@ fun TasksListScreen(
                 {
                     items(state.tasks) { task ->
                         TaskItemCard(
-                            task = task,
-                            modifier = modifier.fillMaxWidth()
+                            task = task.task,
+                            modifier = modifier.fillMaxWidth(),
+                            onDelete = {
+                                viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
+                                coroutineScope.launch {
+                                    val result = snackBarHostState.showSnackbar(
+                                        message = "${it.title} Task Deleted",
+                                        actionLabel = "Undo",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
+                                    } else {
+                                        viewModel.onAction(TasksListScreenActions.DeleteTaskAction(task.task))
+                                    }
+                                }
+                            },
+                            onComplete = {
+                                viewModel.onAction(TasksListScreenActions.ChangeTaskCompletenessAction(task.task))
+                            },
                         )
                         HorizontalDivider()
                     }
                 }
             } else {
                 Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "No Tasks added yet")
+                    Text(text = "No Tasks added yet, add a new task to view here", textAlign = TextAlign.Center)
                 }
             }
         }
