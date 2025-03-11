@@ -1,6 +1,11 @@
 package com.bilal.android_taskmanager.manager.presentation.list
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
@@ -18,7 +24,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -29,6 +34,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +50,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.bilal.android_taskmanager.manager.presentation.list.components.TaskItemCard
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -165,30 +172,41 @@ fun TasksListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 )
                 {
-                    items(filteredTasks) { task ->
-                        TaskItemCard(
-                            task = task.task,
-                            modifier = modifier.fillMaxWidth(),
-                            onDelete = {
-                                viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
-                                coroutineScope.launch {
-                                    val result = snackBarHostState.showSnackbar(
-                                        message = "${it.title} Task Deleted",
-                                        actionLabel = "Undo",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
-                                    } else {
-                                        viewModel.onAction(TasksListScreenActions.DeleteTaskAction(task.task))
+                    itemsIndexed(filteredTasks, key = {  _, task -> task.task.id }) { index, task ->
+                        var isVisible by remember { mutableStateOf(false) } // للتحكم بظهور العنصر
+
+                        LaunchedEffect(Unit) {
+                            delay(index * 100L)
+                            isVisible = true
+                        }
+                        AnimatedVisibility(
+                            visible = isVisible,
+                            enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            TaskItemCard(
+                                task = task.task,
+                                modifier = modifier.fillMaxWidth(),
+                                onDelete = {
+                                    viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
+                                    coroutineScope.launch {
+                                        val result = snackBarHostState.showSnackbar(
+                                            message = "${it.title} Task Deleted",
+                                            actionLabel = "Undo",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
+                                        } else {
+                                            viewModel.onAction(TasksListScreenActions.DeleteTaskAction(task.task))
+                                        }
                                     }
-                                }
-                            },
-                            onComplete = {
-                                viewModel.onAction(TasksListScreenActions.ChangeTaskCompletenessAction(task.task))
-                            },
-                        )
-                        HorizontalDivider()
+                                },
+                                onComplete = {
+                                    viewModel.onAction(TasksListScreenActions.ChangeTaskCompletenessAction(task.task))
+                                },
+                            )
+                        }
                     }
                 }
             } else {
