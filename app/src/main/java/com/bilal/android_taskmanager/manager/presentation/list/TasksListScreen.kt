@@ -10,9 +10,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -27,8 +30,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -55,19 +60,71 @@ fun TasksListScreen(
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var expandedSort by remember { mutableStateOf(false) }
+    var expandedFilter by remember { mutableStateOf(false) }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Task Manager") },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                    }
-                },
                 actions = {
-                    IconButton(onClick = { navController.navigate("add_task") }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Add Task")
+                    Box {
+                        IconButton(onClick = { expandedSort = true }) {
+                            Icon(Icons.Default.Sort, contentDescription = "Sort")
+                        }
+                        DropdownMenu(expanded = expandedSort, onDismissRequest = { expandedSort = false }) {
+                            DropdownMenuItem(
+                                text = { Text("Sort by Priority") },
+                                onClick = {
+                                    viewModel.setSortOption(SortOption.PRIORITY)
+                                    expandedSort = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Sort by Due Date") },
+                                onClick = {
+                                    viewModel.setSortOption(SortOption.DUE_DATE)
+                                    expandedSort = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Sort Alphabetically") },
+                                onClick = {
+                                    viewModel.setSortOption(SortOption.ALPHABETICAL)
+                                    expandedSort = false
+                                }
+                            )
+                        }
+                    }
+
+                    Box {
+                        IconButton(onClick = { expandedFilter = true }) {
+                            Icon(Icons.Default.FilterList, contentDescription = "Filter")
+                        }
+                        DropdownMenu(expanded = expandedFilter, onDismissRequest = { expandedFilter = false }) {
+                            DropdownMenuItem(
+                                text = { Text("All Tasks") },
+                                onClick = {
+                                    viewModel.setFilterOption(FilterOption.ALL)
+                                    expandedFilter = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Completed") },
+                                onClick = {
+                                    viewModel.setFilterOption(FilterOption.COMPLETED)
+                                    expandedFilter = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Pending") },
+                                onClick = {
+                                    viewModel.setFilterOption(FilterOption.PENDING)
+                                    expandedFilter = false
+                                }
+                            )
+                        }
                     }
                 }
             )
@@ -81,6 +138,7 @@ fun TasksListScreen(
         }) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             val state by viewModel.state.collectAsStateWithLifecycle()
+            val filteredTasks by viewModel.filteredTasks.collectAsStateWithLifecycle()
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 Log.d("TasksListViewModel", "DisposableEffect")
@@ -107,7 +165,7 @@ fun TasksListScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 )
                 {
-                    items(state.tasks) { task ->
+                    items(filteredTasks) { task ->
                         TaskItemCard(
                             task = task.task,
                             modifier = modifier.fillMaxWidth(),

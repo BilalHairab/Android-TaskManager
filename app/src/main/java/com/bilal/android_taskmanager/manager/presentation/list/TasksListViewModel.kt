@@ -12,11 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+enum class SortOption { PRIORITY, DUE_DATE, ALPHABETICAL }
+enum class FilterOption { ALL, COMPLETED, PENDING }
 /**
  * Created by Bilal Hairab on 08/03/2025.
  */
@@ -24,6 +27,9 @@ class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() 
     private val _state = MutableStateFlow(TaskListState())
     val state = _state.asStateFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), TaskListState())
+
+    private val _sortOption = MutableStateFlow(SortOption.DUE_DATE)
+    private val _filterOption = MutableStateFlow(FilterOption.ALL)
 
     fun onAction(action: TasksListScreenActions) {
         when (action) {
@@ -48,6 +54,32 @@ class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() 
             }
         }
     }
+
+    fun setSortOption(option: SortOption) {
+        _sortOption.value = option
+    }
+
+    fun setFilterOption(option: FilterOption) {
+        _filterOption.value = option
+    }
+
+    val filteredTasks = combine(state, _sortOption, _filterOption) { tasksState, sort, filter ->
+        tasksState.tasks
+            .filter {
+                when (filter) {
+                    FilterOption.ALL -> true
+                    FilterOption.COMPLETED -> it.task.completed
+                    FilterOption.PENDING -> it.task.completed.not()
+                }
+            }
+            .sortedWith (
+                when (sort) {
+                    SortOption.PRIORITY -> compareBy { it.task.priority.ordinal }
+                    SortOption.DUE_DATE -> compareBy { it.task.dueDate.time }
+                    SortOption.ALPHABETICAL -> compareBy { it.task.title }
+                }
+            )
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private fun changeTaskCompleteness(task: Task) {
         viewModelScope.launch {
