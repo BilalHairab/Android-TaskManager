@@ -219,6 +219,9 @@ fun TasksListScreen(
                                     onComplete = {
                                         viewModel.onAction(TasksListScreenActions.ChangeTaskCompletenessAction(task.task))
                                     },
+                                    onClick = {
+                                        viewModel.onAction(TasksListScreenActions.OnTaskSelectedAction(task.task))
+                                    }
                                 )
                             }
                         }

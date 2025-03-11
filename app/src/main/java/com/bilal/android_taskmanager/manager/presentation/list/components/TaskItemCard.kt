@@ -22,7 +22,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -41,7 +40,6 @@ import com.bilal.android_taskmanager.manager.domain.TaskPriority
 import com.bilal.android_taskmanager.manager.presentation.models.getSurfaceColor
 import com.bilal.android_taskmanager.manager.presentation.models.toReadableDate
 import com.bilal.android_taskmanager.ui.theme.AndroidTaskManagerTheme
-import kotlinx.coroutines.delay
 import java.util.Date
 
 /**
@@ -51,6 +49,7 @@ import java.util.Date
 @Composable
 fun TaskItemCard(
     task: Task,
+    onClick: () -> Unit,
     onDelete: (Task) -> Unit,
     onComplete: (Task) -> Unit,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
@@ -89,7 +88,10 @@ fun TaskItemCard(
 //
     SwipeToDismiss(
         state = dismissState,
-        directions = if(task.completed) setOf(DismissDirection.EndToStart) else setOf(DismissDirection.StartToEnd, DismissDirection.EndToStart),
+        directions = if (task.completed) setOf(DismissDirection.EndToStart) else setOf(
+            DismissDirection.StartToEnd,
+            DismissDirection.EndToStart
+        ),
         background = {
             val color = when (dismissState.dismissDirection) {
                 DismissDirection.StartToEnd -> Color.Green
@@ -121,6 +123,9 @@ fun TaskItemCard(
                         spotColor = MaterialTheme.colorScheme.primary
                     ),
                 shape = RectangleShape,
+                onClick = {
+                    onClick()
+                }
             ) {
                 Row(
                     modifier = modifier
@@ -167,6 +172,9 @@ private fun TaskCardPreview() {
 
             },
             onComplete = {
+
+            },
+            onClick = {
 
             }
         )

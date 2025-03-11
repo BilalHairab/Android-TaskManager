@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.material.icons.extended)
     implementation(libs.material)
+    implementation(libs.androidx.adaptive.android)
+    implementation(libs.androidx.adaptive.navigation.android)
     kapt(libs.room.compiler)
     implementation(libs.bundles.koin)
     implementation(libs.navigation.compose)

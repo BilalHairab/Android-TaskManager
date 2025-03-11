@@ -5,7 +5,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bilal.android_taskmanager.manager.presentation.add_task.AddTaskScreen
-import com.bilal.android_taskmanager.manager.presentation.list.TasksListScreen
 
 /**
  * Created by Bilal Hairab on 09/03/2025.
@@ -14,7 +13,7 @@ import com.bilal.android_taskmanager.manager.presentation.list.TasksListScreen
 @Composable
 fun NavigationGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "home") {
-        composable("home") { TasksListScreen(navController) }
+        composable("home") { AdaptiveTaskListDetailPane(navController) }
         composable("add_task") { AddTaskScreen(navController) }
     }
 }

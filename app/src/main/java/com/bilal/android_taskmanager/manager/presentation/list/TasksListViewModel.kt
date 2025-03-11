@@ -18,11 +18,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class SortOption { PRIORITY, DUE_DATE, ALPHABETICAL }
-enum class FilterOption { ALL, COMPLETED, PENDING }
 /**
  * Created by Bilal Hairab on 08/03/2025.
  */
+enum class SortOption { PRIORITY, DUE_DATE, ALPHABETICAL }
+enum class FilterOption { ALL, COMPLETED, PENDING }
+
 class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() {
     private val _state = MutableStateFlow(TaskListState())
     val state = _state.asStateFlow()
@@ -38,7 +39,7 @@ class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() 
             }
 
             is TasksListScreenActions.OnTaskSelectedAction -> {
-
+                changeSelectedTask(task = action.task)
             }
 
             is TasksListScreenActions.ChangeTaskCompletenessAction -> {
@@ -72,7 +73,7 @@ class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() 
                     FilterOption.PENDING -> it.task.completed.not()
                 }
             }
-            .sortedWith (
+            .sortedWith(
                 when (sort) {
                     SortOption.PRIORITY -> compareBy { it.task.priority.ordinal }
                     SortOption.DUE_DATE -> compareBy { it.task.dueDate.time }
@@ -80,6 +81,12 @@ class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() 
                 }
             )
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    private fun changeSelectedTask(task: Task?) {
+        _state.update {
+            it.copy(selectedTask = task)
+        }
+    }
 
     private fun changeTaskCompleteness(task: Task) {
         viewModelScope.launch {
@@ -123,6 +130,9 @@ class TasksListViewModel(private val repository: TasksDataSource) : ViewModel() 
                         it.copy(tasks = it.tasks.dropLastWhile { t ->
                             t.task.id == task.id
                         })
+                    }
+                    if (task.id == state.value.selectedTask?.id) {
+                        changeSelectedTask(null)
                     }
                 }.onError {
                     changeTaskCVisibility(task, true)
