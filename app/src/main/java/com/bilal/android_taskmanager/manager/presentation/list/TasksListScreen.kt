@@ -5,14 +5,15 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -49,6 +50,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.bilal.android_taskmanager.manager.presentation.list.components.AnimatedCircularProgress
 import com.bilal.android_taskmanager.manager.presentation.list.components.TaskItemCard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -146,6 +148,9 @@ fun TasksListScreen(
         Box(modifier = Modifier.padding(paddingValues)) {
             val state by viewModel.state.collectAsStateWithLifecycle()
             val filteredTasks by viewModel.filteredTasks.collectAsStateWithLifecycle()
+            val completedTasks = filteredTasks.count { it.task.completed }
+            val totalTasks = filteredTasks.size
+
             val lifecycleOwner = LocalLifecycleOwner.current
             DisposableEffect(lifecycleOwner) {
                 Log.d("TasksListViewModel", "DisposableEffect")
@@ -165,47 +170,57 @@ fun TasksListScreen(
                     CircularProgressIndicator()
                 }
             } else if (state.tasks.isNotEmpty()) {
-                LazyColumn(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                )
-                {
-                    itemsIndexed(filteredTasks, key = {  _, task -> task.task.id }) { index, task ->
-                        var isVisible by remember { mutableStateOf(false) } // للتحكم بظهور العنصر
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AnimatedCircularProgress(completedTasks, totalTasks)
 
-                        LaunchedEffect(Unit) {
-                            delay(index * 100L)
-                            isVisible = true
-                        }
-                        AnimatedVisibility(
-                            visible = isVisible,
-                            enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
-                            exit = fadeOut(),
-                        ) {
-                            TaskItemCard(
-                                task = task.task,
-                                modifier = modifier.fillMaxWidth(),
-                                onDelete = {
-                                    viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
-                                    coroutineScope.launch {
-                                        val result = snackBarHostState.showSnackbar(
-                                            message = "${it.title} Task Deleted",
-                                            actionLabel = "Undo",
-                                            duration = SnackbarDuration.Short
-                                        )
-                                        if (result == SnackbarResult.ActionPerformed) {
-                                            viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
-                                        } else {
-                                            viewModel.onAction(TasksListScreenActions.DeleteTaskAction(task.task))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    LazyColumn(
+                        modifier = modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    )
+                    {
+                        itemsIndexed(filteredTasks, key = { _, task -> task.task.id }) { index, task ->
+                            var isVisible by remember { mutableStateOf(false) } // للتحكم بظهور العنصر
+
+                            LaunchedEffect(Unit) {
+                                delay(index * 100L)
+                                isVisible = true
+                            }
+                            AnimatedVisibility(
+                                visible = isVisible,
+                                enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
+                                exit = fadeOut(),
+                            ) {
+                                TaskItemCard(
+                                    task = task.task,
+                                    modifier = modifier.fillMaxWidth(),
+                                    onDelete = {
+                                        viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
+                                        coroutineScope.launch {
+                                            val result = snackBarHostState.showSnackbar(
+                                                message = "${it.title} Task Deleted",
+                                                actionLabel = "Undo",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            if (result == SnackbarResult.ActionPerformed) {
+                                                viewModel.onAction(TasksListScreenActions.ChangeTaskVisibilityAction(task.task))
+                                            } else {
+                                                viewModel.onAction(TasksListScreenActions.DeleteTaskAction(task.task))
+                                            }
                                         }
-                                    }
-                                },
-                                onComplete = {
-                                    viewModel.onAction(TasksListScreenActions.ChangeTaskCompletenessAction(task.task))
-                                },
-                            )
+                                    },
+                                    onComplete = {
+                                        viewModel.onAction(TasksListScreenActions.ChangeTaskCompletenessAction(task.task))
+                                    },
+                                )
+                            }
                         }
                     }
                 }
